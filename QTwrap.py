@@ -165,9 +165,8 @@ class qtmodel(QtGui.QStandardItemModel):
         order=''
         if self.tmpl.has_key('order'):
             order=self.tmpl['order']
-        ids = self.db.search(self.tmpl['table'], filter,
+        self.context = self.db.search_read(self.tmpl['table'], filter,
                              limit=limit, offset=self.page * self.rowsPerpage,order=order)
-        self.context = self.db.read(self.tmpl['table'], ids)
         if self.tmpl.has_key('distinct') and self.context:
             self.context = self.tmpl['distinct'](self.context)
         self.fill()
