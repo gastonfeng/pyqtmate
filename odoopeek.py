@@ -135,6 +135,7 @@ class odoopeek(object):
         context = mdl.search_read([('name', '=', module)])
         if not context or context[0][u'latest_version'] != ver:
             mdl.install_from_urls({module: urls})
+            mdl.button_immediate_upgrade(context[0]['id'])
 
 
 if __name__ == '__main__':
