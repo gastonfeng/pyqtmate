@@ -1,7 +1,7 @@
 # coding=utf-8
 import os
 
-from PyQt4 import QtGui,uic,rcc
+from PyQt4 import QtGui,uic
 from PyQt4.QtCore import QFile
 from PyQt4.QtGui import QAbstractItemView
 
