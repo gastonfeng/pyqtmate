@@ -4,15 +4,16 @@ import threading
 
 from PyQt4 import QtGui
 from PyQt4.QtCore import Qt, pyqtSignal
+from PyQt4.QtGui import QMainWindow
 
 from guiqt import guiqt
-from uisplash import Ui_MainWindow
+#from uisplash import Ui_MainWindow
 
 
-class qtsplash(guiqt, Ui_MainWindow):
+class qtsplash(guiqt):
     start=pyqtSignal(list)
     def __init__(self, mainProg, *args):
-        guiqt.__init__(self, *args)
+        guiqt.__init__(self,'splash', *args)
         self.setWindowFlags(Qt.SplashScreen)
         self.progressBar.setTextVisible(False)
         self.show()
