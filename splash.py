@@ -6,14 +6,16 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui import QMainWindow
 
-from guiqt import guiqt
-#from uisplash import Ui_MainWindow
+from guiqt import guiqt, ui_compile
+
+ui_compile('splash')
+from uisplash import Ui_MainWindow
 
 
-class qtsplash(guiqt):
+class qtsplash(guiqt,Ui_MainWindow):
     start=pyqtSignal(list)
     def __init__(self, mainProg, *args):
-        guiqt.__init__(self,'splash', *args)
+        guiqt.__init__(self, *args)
         self.setWindowFlags(Qt.SplashScreen)
         self.progressBar.setTextVisible(False)
         self.show()
