@@ -1,15 +1,30 @@
 # coding=utf-8
-from PyQt4 import QtGui
+import os
+
+from PyQt4 import QtGui,uic,rcc
+from PyQt4.QtCore import QFile
 from PyQt4.QtGui import QAbstractItemView
 
 from QTwrap import qtmodel, qtMenu, qtTreeModel
 
 
 class guiqt(QtGui.QMainWindow):
-    def __init__(self, *args):
+    def __init__(self,uifile, *args):
         QtGui.QMainWindow.__init__(self, *args)
         self.setupUi(self)
         # self.win = uic.loadUi(ui, self)
+
+        """编译UI文件"""
+        if os.path.isfile(uifile+'.ui'):
+            ui = QFile(uifile+'.ui')
+            py = QFile('ui'+uifile+'.py')
+            ui.open(QFile.ReadOnly)
+            py.open(QFile.WriteOnly)
+            uic.compileUi(ui, py)
+            ui.close()
+            py.close()
+        modl='ui'+uifile
+        __import__(modl)
 
     def load_buttons(self, buttons):
         for btn in buttons:
