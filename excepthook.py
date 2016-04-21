@@ -7,6 +7,7 @@ import traceback
 
 from PyQt4 import QtGui
 
+from feedback import feedback
 from guiqt import ui_compile
 
 Max_Traceback_List_Size = 20
@@ -75,6 +76,7 @@ ignored_exceptions = []  # a problem with a line in a module is only reported on
 def AddExceptHook(path, app_version='[No version]'):  # , ignored_exceptions=[]):
 
     def handle_exception(e_type, e_value, e_traceback):
+        feedback()
         traceback.print_exception(e_type, e_value,
                                   e_traceback)  # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
