@@ -77,10 +77,10 @@ class qtMenu(QtGui.QMenu):
                         item.setData(m['id'])
                     # item.triggered.connect()
                     self.addAction(item)
-            if m.has_key('enable') and not m['enable']():
-                item.setEnabled(False)
-            else:
-                item.setEnabled(True)
+                if m.has_key('enable') and not m['enable']():
+                    item.setEnabled(False)
+                else:
+                    item.setEnabled(True)
 
 
     def action(self, point):

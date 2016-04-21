@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 import platform
 import sys
@@ -7,7 +8,6 @@ import traceback
 
 from PyQt4 import QtGui
 
-from feedback import feedback
 from guiqt import ui_compile
 
 Max_Traceback_List_Size = 20
@@ -17,12 +17,17 @@ ui_compile('excepthook')
 from uiexcepthook import Ui_Dialog
 
 
-class execptDialog(QtGui.QDialog):
-    def __init__(self, msg, list, *args):
-        QtGui.QDialog.__init__(self, *args)
-        self.setupUi(Ui_Dialog)
-        self.textBrowser.setText(msg)
-        self.exec_()
+class execptDialog(QtGui.QDialog, Ui_Dialog):
+    def __init__(self, tip, msg, list, *args):
+        try:
+            QtGui.QDialog.__init__(self, *args)
+            self.setupUi(self)
+            self.textBrowser.setText(msg + tip )
+            for line in list:
+                self.textBrowser.append(line)
+            self.exec_()
+        except Exception, ex:
+            print ex.message
 
 
 def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
@@ -41,21 +46,18 @@ def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
     #    if cap:
     #        cap.ReleaseMouse()
 
-    dlg = execptDialog(None,
-                       ("""
-An unhandled exception (bug) occured. Bug report saved at :
+    dlg = execptDialog(
+        (u"""
+程序发生错误. 信息已保存到 :
 (%s)
 
-Please be kind enough to send this file to:
-beremiz-devel@lists.sourceforge.net
-
-You should now restart Beremiz.
+你需要重新启动程序.
 
 Traceback:
 """) % bug_report_path +
-                       repr(e_type) + " : " + repr(e_value),
-                       "Error",
-                       trcbck_lst)
+        repr(e_type) + " : " + repr(e_value),
+        "Error",
+        trcbck_lst)
 
     return dlg
 
@@ -76,7 +78,6 @@ ignored_exceptions = []  # a problem with a line in a module is only reported on
 def AddExceptHook(path, app_version='[No version]'):  # , ignored_exceptions=[]):
 
     def handle_exception(e_type, e_value, e_traceback):
-        feedback()
         traceback.print_exception(e_type, e_value,
                                   e_traceback)  # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
@@ -84,7 +85,7 @@ def AddExceptHook(path, app_version='[No version]'):  # , ignored_exceptions=[])
         if ex not in ignored_exceptions:
             date = time.ctime()
             bug_report_path = path + os.sep + "bug_report_" + date.replace(':', '-').replace(' ', '_') + ".txt"
-            result = True  # Display_Exception_Dialog(e_type, e_value, e_traceback, bug_report_path)
+            result = Display_Exception_Dialog(e_type, e_value, e_traceback, bug_report_path)
             if result:
                 ignored_exceptions.append(ex)
                 info = {
