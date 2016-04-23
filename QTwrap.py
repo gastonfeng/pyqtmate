@@ -82,7 +82,6 @@ class qtMenu(QtGui.QMenu):
                 else:
                     item.setEnabled(True)
 
-
     def action(self, point):
         self.clear()
         self.fill()
@@ -147,7 +146,7 @@ class qtmodel(QtGui.QStandardItemModel):
         self.load()
         self.dataChanged.connect(self.tdataChanged)
         self.editing = False
-        self.datChange=False
+        self.datChange = False
         self.lasttime = datetime.now()
         self.timer = QTimer()
         self.timer.setSingleShot(True)
@@ -162,11 +161,11 @@ class qtmodel(QtGui.QStandardItemModel):
         limit = self.rowsPerpage
         if self.tmpl.has_key('limit'):
             limit = self.tmpl['limit']
-        order=''
+        order = ''
         if self.tmpl.has_key('order'):
-            order=self.tmpl['order']
+            order = self.tmpl['order']
         self.context = self.db.search_read(self.tmpl['table'], filter,
-                             limit=limit, offset=self.page * self.rowsPerpage,order=order)
+                                           limit=limit, offset=self.page * self.rowsPerpage, order=order)
         if self.tmpl.has_key('distinct') and self.context:
             self.context = self.tmpl['distinct'](self.context)
         self.fill()
@@ -174,8 +173,8 @@ class qtmodel(QtGui.QStandardItemModel):
             self.tmpl['doChange']()
 
     def reload(self):
-        #self.load()
-        #return
+        # self.load()
+        # return
         if not self.timer.isActive():
             self.timer.start(1000)
 
@@ -185,8 +184,9 @@ class qtmodel(QtGui.QStandardItemModel):
         self.load()
 
     def search(self, key):
-        kw = self.db.search(self.tmpl['table'], filter)
         del self.context[:]
+        self.page = 0
+        kw = self.db.search(self.tmpl['table'], filter)
         if len(kw) > 0:
             self.context = self.db.read(self.tmpl['table'], kw)
         self.fill()
