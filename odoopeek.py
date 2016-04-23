@@ -84,6 +84,15 @@ class odoopeek(object):
             kw = False
         return kw
 
+    def browse(self,table,ids):
+        try:
+            if table in self.odoo.env:
+                module=self.odoo.env[table]
+                return module.browse(ids)
+        except Exception,ex:
+            print ex.message
+        return False
+
     def search_browse(self, table, filter, limit=25, offset=0,order=''):
         try:
             if table in self.odoo.env:

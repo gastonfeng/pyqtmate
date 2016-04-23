@@ -85,37 +85,36 @@ def AddExceptHook(path, app_version='[No version]'):  # , ignored_exceptions=[])
         if ex not in ignored_exceptions:
             date = time.ctime()
             bug_report_path = path + os.sep + "bug_report_" + date.replace(':', '-').replace(' ', '_') + ".txt"
-            result = Display_Exception_Dialog(e_type, e_value, e_traceback, bug_report_path)
-            if result:
-                ignored_exceptions.append(ex)
-                info = {
-                    # 'app-title' : wx.GetApp().GetAppName(), # app_title
-                    'app-version': app_version,
-                    # 'wx-version' : wx.VERSION_STRING,
-                    #  'wx-platform' : wx.Platform,
-                    'python-version': platform.python_version(),  # sys.version.split()[0],
-                    'platform': platform.platform(),
-                    'e-type': e_type,
-                    'e-value': e_value,
-                    'date': date,
-                    'cwd': os.getcwd(),
-                }
-                if e_traceback:
-                    info['traceback'] = ''.join(traceback.format_tb(e_traceback)) + '%s: %s' % (e_type, e_value)
-                    last_tb = get_last_traceback(e_traceback)
-                    exception_locals = last_tb.tb_frame.f_locals  # the locals at the level of the stack trace where the exception actually occurred
-                    info['locals'] = format_namespace(exception_locals)
-                    if 'self' in exception_locals:
-                        try:
-                            info['self'] = format_namespace(exception_locals['self'].__dict__)
-                        except:
-                            pass
+            ignored_exceptions.append(ex)
+            info = {
+                # 'app-title' : wx.GetApp().GetAppName(), # app_title
+                'app-version': app_version,
+                # 'wx-version' : wx.VERSION_STRING,
+                #  'wx-platform' : wx.Platform,
+                'python-version': platform.python_version(),  # sys.version.split()[0],
+                'platform': platform.platform(),
+                'e-type': e_type,
+                'e-value': e_value,
+                'date': date,
+                'cwd': os.getcwd(),
+            }
+            if e_traceback:
+                info['traceback'] = ''.join(traceback.format_tb(e_traceback)) + '%s: %s' % (e_type, e_value)
+                last_tb = get_last_traceback(e_traceback)
+                exception_locals = last_tb.tb_frame.f_locals  # the locals at the level of the stack trace where the exception actually occurred
+                info['locals'] = format_namespace(exception_locals)
+                if 'self' in exception_locals:
+                    try:
+                        info['self'] = format_namespace(exception_locals['self'].__dict__)
+                    except:
+                        pass
 
-                output = open(bug_report_path, 'w')
-                lst = info.keys()
-                lst.sort()
-                for a in lst:
-                    output.write(a + ":\n" + str(info[a]) + "\n\n")
+            output = open(bug_report_path, 'w')
+            lst = info.keys()
+            lst.sort()
+            for a in lst:
+                output.write(a + ":\n" + str(info[a]) + "\n\n")
+            Display_Exception_Dialog(e_type, e_value, e_traceback, bug_report_path)
 
     # sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
     sys.excepthook = handle_exception
