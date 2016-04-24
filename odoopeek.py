@@ -47,7 +47,7 @@ class odoopeek(object):
             if self.singal:
                 self.singal.emit({'db': table})
         except Exception, e:
-            print e
+            print e.message
             kw = False
         # self.mutex.release()
         return kw
