@@ -9,6 +9,7 @@ import traceback
 from PyQt4 import QtGui
 
 from guiqt import ui_compile
+from version_master import appversion
 
 Max_Traceback_List_Size = 20
 
@@ -88,7 +89,7 @@ def AddExceptHook(path, app_version='[No version]'):  # , ignored_exceptions=[])
             ignored_exceptions.append(ex)
             info = {
                 # 'app-title' : wx.GetApp().GetAppName(), # app_title
-                'app-version': app_version,
+                'app-version': appversion,
                 # 'wx-version' : wx.VERSION_STRING,
                 #  'wx-platform' : wx.Platform,
                 'python-version': platform.python_version(),  # sys.version.split()[0],

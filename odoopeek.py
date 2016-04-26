@@ -1,12 +1,13 @@
 # coding=utf-8
 
+import time
+
 import odoorpc as odoorpc
 
 
 class odoopeek(object):
-    def __init__(self, url, port):
+    def __init__(self):
         self.singal = False
-        self.odoo = odoorpc.ODOO(url, 'jsonrpc', port)
 
     def version(self):
         return self.odoo.version
@@ -14,8 +15,9 @@ class odoopeek(object):
     def setSingal(self, s):
         self.singal = s
 
-    def login(self, db, username, password):
+    def login(self, url, port, db, username, password):
         try:
+            self.odoo = odoorpc.ODOO(url, 'jsonrpc', port)
             self.odoo.login(db, username, password)
         except Exception, e:
             print e.message
@@ -45,7 +47,7 @@ class odoopeek(object):
             module = self.odoo.env[table]
             kw = module.write(ids, values)
             if self.singal:
-                self.singal.emit({'db': table})
+                self.singal.emit({'db': table}, False)
         except Exception, e:
             print e.message
             kw = False
@@ -55,7 +57,7 @@ class odoopeek(object):
     def search(self, table, filter, limit=25, offset=0, order=''):
         try:
             module = self.odoo.env[table]
-            ids = self.odoo.execute_kw(table, 'search', [filter], {'limit': limit, 'offset': offset,'order':order})
+            ids = self.odoo.execute_kw(table, 'search', [filter], {'limit': limit, 'offset': offset, 'order': order})
         except Exception, e:
             print e.message
             ids = False
@@ -67,7 +69,7 @@ class odoopeek(object):
             ids = module.search(filter)
             kw = module.write(ids, values)
             if self.singal:
-                self.singal.emit({'db': table})
+                self.singal.emit({'db': table}, False)
         except Exception, e:
             print e
             kw = False
@@ -77,27 +79,27 @@ class odoopeek(object):
     def search_read(self, table, filter, limit=25, offset=0, order=''):
         try:
             module = self.odoo.env[table]
-            ids = self.odoo.execute_kw(table, 'search', [filter], {'limit': limit, 'offset': offset,'order':order})
+            ids = self.odoo.execute_kw(table, 'search', [filter], {'limit': limit, 'offset': offset, 'order': order})
             return module.read(ids)
         except Exception, e:
             print e.message
             kw = False
         return kw
 
-    def browse(self,table,ids):
-        try:
-            if table in self.odoo.env:
-                module=self.odoo.env[table]
-                return module.browse(ids)
-        except Exception,ex:
-            print ex.message
-        return False
-
-    def search_browse(self, table, filter, limit=25, offset=0,order=''):
+    def browse(self, table, ids):
         try:
             if table in self.odoo.env:
                 module = self.odoo.env[table]
-                ids = module.search(filter, limit=limit, offset=offset,order=order)
+                return module.browse(ids)
+        except Exception, ex:
+            print ex.message
+        return False
+
+    def search_browse(self, table, filter, limit=25, offset=0, order=''):
+        try:
+            if table in self.odoo.env:
+                module = self.odoo.env[table]
+                ids = module.search(filter, limit=limit, offset=offset, order=order)
                 return module.browse(ids)
         except Exception, e:
             print e.message
@@ -109,7 +111,7 @@ class odoopeek(object):
             ids = module.create(vals)
             context = module.read(ids)
             if self.singal:
-                self.singal.emit({'db': table})
+                self.singal.emit({'db': table}, False)
         except Exception, e:
             print e.message
             context = False
@@ -120,7 +122,7 @@ class odoopeek(object):
             module = self.odoo.env[table]
             kw = module.unlink(ids)
             if self.singal:
-                self.singal.emit({'db': table})
+                self.singal.emit({'db': table}, False)
         except Exception, e:
             print e.message
             kw = False
@@ -129,10 +131,10 @@ class odoopeek(object):
     def search_unlink(self, table, filter):
         try:
             module = self.odoo.env[table]
-            ids=module.search(filter)
+            ids = module.search(filter)
             kw = module.unlink(ids)
             if self.singal:
-                self.singal.emit({'db': table})
+                self.singal.emit({'db': table}, False)
         except Exception, e:
             print e.message
             kw = False
@@ -144,7 +146,8 @@ class odoopeek(object):
         context = mdl.search_read([('name', '=', module)])
         if not context or context[0][u'latest_version'] != ver:
             mdl.install_from_urls({module: urls})
-            mdl.button_immediate_upgrade(context[0]['id'])
+            time.sleep(10)
+            # mdl.button_immediate_upgrade(context[0]['id'])
 
 
 if __name__ == '__main__':
@@ -152,7 +155,7 @@ if __name__ == '__main__':
     print odoo.version()
     odoo.login('custormdb', 'IMCONNECT', '111111')
     odoo.create('kaikong.qq.buddy',
-                                 ({'name': 'hello', 'qq': [(4,1)], 'buddy': str('qq')}))
+                ({'name': 'hello', 'qq': [(4, 1)], 'buddy': str('qq')}))
     while True:
         ids = odoo.search('kaikong.qq.message', [('status', '=', 'new msg')])
         context = odoo.read('kaikong.qq.message', ids)

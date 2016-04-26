@@ -143,7 +143,7 @@ class qtmodel(QtGui.QStandardItemModel):
         self.db = db
         self.context = []
         view.setModel(self)
-        self.load()
+        #self.load()
         self.dataChanged.connect(self.tdataChanged)
         self.editing = False
         self.datChange = False

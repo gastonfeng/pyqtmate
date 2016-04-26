@@ -25,6 +25,7 @@ class guiqt(QtGui.QMainWindow):
     def __init__(self, *args):
         QtGui.QMainWindow.__init__(self, *args)
         self.setupUi(self)
+        self.show()
         # self.win = uic.loadUi(ui, self)
 
     def load_buttons(self, buttons):
