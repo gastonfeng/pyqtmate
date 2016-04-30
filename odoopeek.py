@@ -150,26 +150,3 @@ class odoopeek(object):
             # mdl.button_immediate_upgrade(context[0]['id'])
 
 
-if __name__ == '__main__':
-    odoo = odoopeek('localhost', '8888')
-    print odoo.version()
-    odoo.login('custormdb', 'IMCONNECT', '111111')
-    odoo.create('kaikong.qq.buddy',
-                ({'name': 'hello', 'qq': [(4, 1)], 'buddy': str('qq')}))
-    while True:
-        ids = odoo.search('kaikong.qq.message', [('status', '=', 'new msg')])
-        context = odoo.read('kaikong.qq.message', ids)
-        ccc = odoo.search_read('kaikong.qq.message', [('status', '=', 'new msg')])
-    # odoo.mirgateModule('IMConnecter', '8.0.0.2')
-
-    mdl = odoo.odoo.env['module_config']
-    # context=mdl.search_read([('name','=','modulemanager')])
-    mdl.install_from_server()
-
-    odoo.create('kaikong.qq.list', {'name': 'abcdef'})
-    qq = odoo.recordCount('kaikong.qq.list')
-    print qq
-    qq = odoo.search('kaikong.qq.list', [])
-    print qq
-    qq = odoo.read('kaikong.qq.list', qq)
-    print qq

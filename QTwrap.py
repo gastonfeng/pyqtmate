@@ -114,6 +114,7 @@ def widgetQqmsg(parent, record):
     txt = record['subject']
     html = qqmsg2html(txt)
     ctl = QtGui.QLabel(parent)
+    ctl.setWordWrap(True)
     # ctl.setMinimumHeight(10)
     # ctl.setMaximumHeight(200)
     # ctl.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum);
@@ -143,7 +144,7 @@ class qtmodel(QtGui.QStandardItemModel):
         self.db = db
         self.context = []
         view.setModel(self)
-        #self.load()
+        # self.load()
         self.dataChanged.connect(self.tdataChanged)
         self.editing = False
         self.datChange = False
@@ -199,8 +200,9 @@ class qtmodel(QtGui.QStandardItemModel):
             else:
                 field = col['field']
                 val = record[field]
-                if col.has_key('getContext'):
-                    val = col['getContext'](record)
+            if col.has_key('getContext'):
+                func = col['getContext']
+                val = func(record)
             item = QtGui.QStandardItem()
             if Qt.ItemIsUserCheckable in col['flag']:
                 item.setCheckable(True)
