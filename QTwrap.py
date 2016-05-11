@@ -174,8 +174,8 @@ class qtmodel(QtGui.QStandardItemModel):
             self.tmpl['doChange']()
 
     def reload(self):
-        # self.load()
-        # return
+        self.load()
+        return
         if not self.timer.isActive():
             self.timer.start(1000)
 
