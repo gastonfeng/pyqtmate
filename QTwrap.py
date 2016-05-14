@@ -149,9 +149,9 @@ class qtmodel(QtGui.QStandardItemModel):
         self.editing = False
         self.datChange = False
         self.lasttime = datetime.now()
-        self.timer = QTimer()
-        self.timer.setSingleShot(True)
-        self.timer.timeout.connect(self.tmr_reload)
+        # self.timer = QTimer()
+        # self.timer.setSingleShot(True)
+        # self.timer.timeout.connect(self.tmr_reload)
 
     def load(self, filter=[]):
         if len(filter) == 0:
@@ -176,8 +176,8 @@ class qtmodel(QtGui.QStandardItemModel):
     def reload(self):
         self.load()
         return
-        if not self.timer.isActive():
-            self.timer.start(1000)
+        # if not self.timer.isActive():
+        #    self.timer.start(1000)
 
     def tmr_reload(self):
         if self.editing:
@@ -275,7 +275,7 @@ class qtmodel(QtGui.QStandardItemModel):
 
     def fill(self):
         self.editing = True
-        self.clear()
+        # self.clear()
         ColCount = len(self.tmpl['fields'])
         self.setColumnCount(ColCount)
         col_index = 0
