@@ -109,13 +109,12 @@ class odoopeek(object):
         try:
             module = self.odoo.env[table]
             ids = module.create(vals)
-            context = module.read(ids)
             if self.singal:
                 self.singal.emit({'db': table}, False)
         except Exception, e:
             print e.message
-            context = False
-        return context
+            ids = False
+        return ids
 
     def unlink(self, table, ids):
         try:
