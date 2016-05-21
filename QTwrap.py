@@ -150,9 +150,9 @@ class qtmodel(QtGui.QStandardItemModel):
         self.loading = False
         self.datChange = False
         self.lasttime = datetime.now()
-        # self.timer = QTimer()
-        # self.timer.setSingleShot(True)
-        # self.timer.timeout.connect(self.tmr_reload)
+        self.timer = QTimer()
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.tmr_reload)
 
     def load(self, filter=[]):
         self.loading = True
@@ -178,11 +178,11 @@ class qtmodel(QtGui.QStandardItemModel):
         self.loading = False
 
     def reload(self):
-        if not self.loading:
-            self.load()
-        return
-        # if not self.timer.isActive():
-        #    self.timer.start(1000)
+        # if not self.loading:
+        #    self.load()
+        # return
+        if not self.timer.isActive():
+            self.timer.start(10000)
 
     def tmr_reload(self):
         if self.editing:
