@@ -147,6 +147,7 @@ class qtmodel(QtGui.QStandardItemModel):
         # self.load()
         self.dataChanged.connect(self.tdataChanged)
         self.editing = False
+        self.loading = False
         self.datChange = False
         self.lasttime = datetime.now()
         # self.timer = QTimer()
@@ -154,9 +155,11 @@ class qtmodel(QtGui.QStandardItemModel):
         # self.timer.timeout.connect(self.tmr_reload)
 
     def load(self, filter=[]):
+        self.loading = True
         if len(filter) == 0:
             filter = self.tmpl['filter']
-        self.rows = self.db.recordCount(self.tmpl['table'], filter)
+        table = self.db.odoo.env[self.tmpl['table']]
+        self.rows = table.search_count(filter)
         self.pages = self.rows / self.rowsPerpage
         # del self.context[:]
         limit = self.rowsPerpage
@@ -165,16 +168,18 @@ class qtmodel(QtGui.QStandardItemModel):
         order = ''
         if self.tmpl.has_key('order'):
             order = self.tmpl['order']
-        self.context = self.db.search_read(self.tmpl['table'], filter,
-                                           limit=limit, offset=self.page * self.rowsPerpage, order=order)
+        ids = table.search(filter, limit=limit, offset=self.page * self.rowsPerpage, order=order)
+        self.context = table.browse(ids)
         if self.tmpl.has_key('distinct') and self.context:
             self.context = self.tmpl['distinct'](self.context)
         self.fill()
         if self.tmpl.has_key('doChange'):
             self.tmpl['doChange']()
+        self.loading = False
 
     def reload(self):
-        self.load()
+        if not self.loading:
+            self.load()
         return
         # if not self.timer.isActive():
         #    self.timer.start(1000)
@@ -217,14 +222,14 @@ class qtmodel(QtGui.QStandardItemModel):
             elif col.has_key('refence'):
                 v = val
                 if v:
-                    v = v[1]
+                    v = v['name']
                 item = QtGui.QStandardItem(unicode(v))
             elif col.has_key('one2many'):
                 if val:
                     item.setText(unicode(val[col['one2many']]))
             elif col.has_key('many2one'):
                 if val:
-                    item.setText(unicode(val[1]))
+                    item.setText(unicode(val['name']))
             else:
                 if val:
                     item = QtGui.QStandardItem(unicode(val))
