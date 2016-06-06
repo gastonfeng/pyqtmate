@@ -47,6 +47,7 @@ class guiqt(QtGui.QMainWindow):
                 tableview['widget'].doubleClicked.connect(tableview['doubleClick'])
             if tableview.has_key('clicked'):
                 tableview['widget'].clicked.connect(tableview['clicked'])
+            model.load()
 
     def load_treeviews(self, treeviews, db):
         for treeview in treeviews:

@@ -182,7 +182,7 @@ class qtmodel(QtGui.QStandardItemModel):
         #    self.load()
         # return
         if not self.timer.isActive():
-            self.timer.start(10000)
+            self.timer.start(1000)
 
     def tmr_reload(self):
         if self.editing:
@@ -343,10 +343,37 @@ class qtmodel(QtGui.QStandardItemModel):
         self.load()
         self.datChange = False
 
+    def getSelectindex(self):
+        smodel = self.view.selectionModel()
+        indexs = smodel.selectedRows()
+        return indexs
+
+    def getSelectId(self):
+        indexs = self.getSelectindex()
+        ids = []
+        for index in indexs:
+            ids.append(self.getId(index))
+        return ids
+
+    def getId(self, index):
+        id = self.data(index, Qt.UserRole + 1).toInt()[0]
+        return id
+
+    def setId(self, index, id):
+        self.setData(index, id, Qt.UserRole + 1)
+
+    def getRecord(self, index):
+        id = self.data(index, Qt.UserRole + 1).toInt()[0]
+        return self.context[id]
+
     def removeRecord(self, index):
         ids = []
-        for i in index:
-            id = self.data(i, Qt.UserRole + 1).toInt()[0]
+        if isinstance(index, list):
+            for i in index:
+                id = self.getId(index)
+                ids.append(id)
+        else:
+            id = self.getId(index)
             ids.append(id)
         if len(ids) > 0:
             self.db.unlink(self.tmpl['table'], ids)
