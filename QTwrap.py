@@ -1,6 +1,7 @@
 # coding=utf-8
 import re
 from datetime import datetime
+from xml.dom import minidom
 
 import PyQt4
 from PyQt4 import QtGui, QtCore
@@ -8,6 +9,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import QAction, QCursor, QPushButton, QLabel, QPixmap, QIcon
 
 from pushbutton import qpushbutton
+from xml_misc import isxml, getXML
 
 pic_pattern = re.compile(r'\[image=\S+\.\w+\]')
 file_pattern = re.compile(r'\[image=(\S+\.\w+)\]')
@@ -38,7 +40,7 @@ def qqmsg2html(msg):
     for pic in pics:
         filename = re.findall(file_pattern, pic)[0]
         pic_new = unicode('<img src="image/' + filename + '" >')
-        html = re.sub(pic_pattern, pic_new, html)
+        html = re.sub(pic_pattern, pic_new, html)  # 替换
     faces = re.findall(face_pattern, html)
     for face in faces:
         filename = re.findall(face_file_pattern, face)[0]
@@ -105,6 +107,48 @@ def model_to_menu(model, action):
     return menu
 
 
+def widget_qq_xml(parent, txt):
+    ctl = QtGui.QLabel(parent)
+    ctl.setWordWrap(True)
+    xml = minidom.parseString(txt.encode('utf-8'))
+    msg = xml.documentElement
+    # msg = root.getElementsByTagName('msg')[0]
+    serviceID = msg.getAttribute('serviceID')
+    templateID = msg.getAttribute('templateID')
+    brief = msg.getAttribute('brief')
+    sourcePublicUin = msg.getAttribute('sourcePublicUin')
+    sourceMsgId = msg.getAttribute('sourceMsgId')
+    url = msg.getAttribute('url')
+    flag = msg.getAttribute('flag')
+    sType = msg.getAttribute('sType')
+    adverSign = msg.getAttribute('adverSign')
+    adverKey = msg.getAttribute('adverKey')
+    action = msg.getAttribute('action')
+    item = msg.getElementsByTagName('item')[0]
+    layout = item.getAttribute('layout')
+    picture = item.getElementsByTagName('picture')[0]
+    cover = picture.getAttribute('cover')
+    w = picture.getAttribute('w')
+    h = picture.getAttribute('h')
+    title = item.getElementsByTagName('title')[0]
+    for node in title.childNodes:
+        if node.nodeType in (node.TEXT_NODE, node.CDATA_SECTION_NODE):
+            title_txt = node.data
+    summary = item.getElementsByTagName('summary')[0]
+    for node in summary.childNodes:
+        if node.nodeType in (node.TEXT_NODE, node.CDATA_SECTION_NODE):
+            summary_txt = node.data
+    # source = msg.getElementsByTagName('source')[0]
+    # name = source.getAttribute('name')
+    # icon = source.getAttribute('icon')
+    # action = source.getAttribute('action')
+    # a_actionData = source.getAttribute('a_actionData')
+    # i_actionData = source.getAttribute('i_actionData')
+    # appid = source.getAttribute('appid')
+    ctl.setText(brief)
+    return ctl
+
+
 def widgetQqmsg(parent, record):
     fontname = record['fontname']
     fontsize = record['fontsize']
@@ -112,9 +156,12 @@ def widgetQqmsg(parent, record):
     color = QtGui.QColor()
     color.setRgba(rgba)
     txt = record['subject']
-    html = qqmsg2html(txt)
     ctl = QtGui.QLabel(parent)
     ctl.setWordWrap(True)
+    if isxml(txt):
+        xml, txt = getXML(txt)
+        widget_qq_xml(ctl, xml)
+    html = qqmsg2html(txt)
     # ctl.setMinimumHeight(10)
     # ctl.setMaximumHeight(200)
     # ctl.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum);
@@ -141,6 +188,7 @@ class qtmodel(QtGui.QStandardItemModel):
         self.pages = 0
         self.page = 0
         self.tmpl = tml
+        self.filter = tml['filter']
         self.db = db
         self.context = []
         view.setModel(self)
@@ -154,12 +202,12 @@ class qtmodel(QtGui.QStandardItemModel):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.tmr_reload)
 
-    def load(self, filter=[]):
+    def load(self):
         self.loading = True
-        if len(filter) == 0:
-            filter = self.tmpl['filter']
-        table = self.db.odoo.env[self.tmpl['table']]
-        self.rows = table.search_count(filter)
+        # if len(filter) == 0:
+        #    filter = self.tmpl['filter']
+        self.table = self.db.odoo.env[self.tmpl['table']]
+        self.rows = self.table.search_count(self.filter)
         self.pages = self.rows / self.rowsPerpage
         # del self.context[:]
         limit = self.rowsPerpage
@@ -168,8 +216,8 @@ class qtmodel(QtGui.QStandardItemModel):
         order = ''
         if self.tmpl.has_key('order'):
             order = self.tmpl['order']
-        ids = table.search(filter, limit=limit, offset=self.page * self.rowsPerpage, order=order)
-        self.context = table.browse(ids)
+        ids = self.table.search(self.filter, limit=limit, offset=self.page * self.rowsPerpage, order=order)
+        self.context = self.table.browse(ids)
         if self.tmpl.has_key('distinct') and self.context:
             self.context = self.tmpl['distinct'](self.context)
         self.fill()
@@ -187,6 +235,10 @@ class qtmodel(QtGui.QStandardItemModel):
     def tmr_reload(self):
         if self.editing:
             return
+        self.load()
+
+    def setFilter_load(self, filter):
+        self.filter = filter
         self.load()
 
     def search(self, key):
@@ -280,7 +332,7 @@ class qtmodel(QtGui.QStandardItemModel):
 
     def fill(self):
         self.editing = True
-        # self.clear()
+        self.clear()
         ColCount = len(self.tmpl['fields'])
         self.setColumnCount(ColCount)
         col_index = 0
@@ -358,6 +410,10 @@ class qtmodel(QtGui.QStandardItemModel):
     def getId(self, index):
         id = self.data(index, Qt.UserRole + 1).toInt()[0]
         return id
+
+    def selSet(self):
+        '''返回选中的记录集'''
+        return self.table.browse(self.getSelectId())
 
     def setId(self, index, id):
         self.setData(index, id, Qt.UserRole + 1)

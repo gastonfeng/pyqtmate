@@ -109,12 +109,13 @@ class odoopeek(object):
         try:
             module = self.odoo.env[table]
             ids = module.create(vals)
+            ret = module.browse(ids)
             if self.singal:
                 self.singal.emit({'db': table}, False)
         except Exception, e:
             print e.message
-            ids = False
-        return ids
+            ret = False
+        return ret
 
     def unlink(self, table, ids):
         try:
@@ -147,5 +148,3 @@ class odoopeek(object):
             mdl.install_from_urls({module: urls})
             time.sleep(10)
             # mdl.button_immediate_upgrade(context[0]['id'])
-
-
