@@ -21,13 +21,7 @@ def ui_compile(uifile):
         py.close()
 
 
-class guiqt(QtGui.QMainWindow):
-    def __init__(self, *args):
-        QtGui.QMainWindow.__init__(self, *args)
-        self.setupUi(self)
-        self.show()
-        # self.win = uic.loadUi(ui, self)
-
+class guiUtil():
     def load_buttons(self, buttons):
         for btn in buttons:
             btn['widget'].clicked.connect(btn['call'])
@@ -67,3 +61,17 @@ class guiqt(QtGui.QMainWindow):
             val = checkbox['init']()
             box.setCheckState(val)
             box.stateChanged.connect(checkbox['save'])
+
+
+class guiqt(QtGui.QMainWindow, guiUtil):
+    def __init__(self, *args):
+        QtGui.QMainWindow.__init__(self, *args)
+        self.setupUi(self)
+        self.show()
+        # self.win = uic.loadUi(ui, self)
+
+
+class guiDialog(QtGui.QDialog, guiUtil):
+    def __init__(self, *args):
+        QtGui.QDialog.__init__(self, *args)
+        self.setupUi(self)
