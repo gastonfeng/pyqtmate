@@ -49,6 +49,17 @@ def qqmsg2html(msg):
     return html
 
 
+class menuAction(QtGui.QAction):
+    '''菜单项封装接口类
+    pmenu:所属菜单的名称
+    '''
+
+    def __init__(self, parent, name, pmenu, call):
+        QtGui.QAction.__init__(self, name, parent)
+        self.pmenu = pmenu
+        self.triggered.connect(call)
+
+
 class qtMenu(QtGui.QMenu):
     def __init__(self, menulist, symbol, parent):
         QtGui.QMenu.__init__(self, parent)
@@ -67,14 +78,12 @@ class qtMenu(QtGui.QMenu):
                     item = self.addMenu(m['name'])
                     sub = m['submenu']
                     for s in sub:
-                        sitem = QAction(s['name'], self)
-                        sitem.triggered.connect(m['slot'])
+                        sitem = menuAction(self, s['name'], self.symbol, m['slot'])
                         if s.has_key('id'):
                             sitem.setData(s['id'])
                         item.addAction(sitem)
                 else:
-                    item = QAction(m['name'], self)
-                    item.triggered.connect(m['slot'])
+                    item = menuAction(self, m['name'], self.symbol, m['slot'])
                     if m.has_key('id'):
                         item.setData(m['id'])
                     # item.triggered.connect()
