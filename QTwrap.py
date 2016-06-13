@@ -1,4 +1,5 @@
 # coding=utf-8
+import os
 import re
 from datetime import datetime
 from xml.dom import minidom
@@ -32,19 +33,24 @@ def qqmsg2html(msg):
 
     html = escape(msg)
     lines = html.split('\n')
-    for i, line in enumerate(lines):
-        lines[i] = '<li>' + line + '</li>'
+    #for i, line in enumerate(lines):
+        #lines[i] = '<li>' + line + '</li>'
         # lines[i] = '<p>' + line + '</p>'
     html = ''.join(lines)
     pics = re.findall(pic_pattern, html)
     for pic in pics:
         filename = re.findall(file_pattern, pic)[0]
-        pic_new = unicode('<img src="image/' + filename + '" >')
+        p=QPixmap('image/'+filename)
+        w=p.width()
+        if w>400:
+            w=400
+        pic_new = unicode('<img src="file:///%s/image/'%os.getcwd() + filename + '" width=%d >'%w)
         html = re.sub(pic_pattern, pic_new, html)  # 替换
     faces = re.findall(face_pattern, html)
     for face in faces:
         filename = re.findall(face_file_pattern, face)[0]
-        pic_new = '<img src="image/' + filename + '">'
+        '''@addgroup QwebView :本地图片需要使用绝对路径才能显示,或通过资源方式调用'''
+        pic_new = '<img src="file:///%s/image/'%os.getcwd() + filename + '">'
         html = re.sub(face_pattern, pic_new, html)
     return html
 
