@@ -7,7 +7,7 @@ from xml.dom import minidom
 import PyQt4
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
-from PyQt4.QtGui import QAction, QCursor, QPushButton, QLabel, QPixmap, QIcon
+from PyQt4.QtGui import QCursor, QPushButton, QLabel, QPixmap, QIcon
 
 from pushbutton import qpushbutton
 from xml_misc import isxml, getXML
@@ -467,9 +467,9 @@ class qtmodel(QtGui.QStandardItemModel):
 
 class qtTreeModel(qtmodel):
     def __init__(self, tml, db, filter, view):
-        qtmodel.__init__(self, tml, db, filter, view)
+        qtmodel.__init__(self, tml, db, view)
 
-    def loadnode(self, parent, pid, filter):
+    def loadnode(self, parent, pid):
         if pid:
             p = self.db.search(self.tmpl['table'], [['parent_id', '=', pid]])
         else:
@@ -502,8 +502,8 @@ class qtTreeModel(qtmodel):
                 col_index = col_index + 1
             self.loadnode(itemfirst, record['id'], [])
 
-    def load(self, filter):
-        self.loadnode(None, False, [["id", ">", 0]])
+    def load(self):
+        self.loadnode(None, False)
 
 
 class qtComboboxmodel():
