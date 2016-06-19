@@ -33,24 +33,24 @@ def qqmsg2html(msg):
 
     html = escape(msg)
     lines = html.split('\n')
-    #for i, line in enumerate(lines):
-        #lines[i] = '<li>' + line + '</li>'
-        # lines[i] = '<p>' + line + '</p>'
+    # for i, line in enumerate(lines):
+    # lines[i] = '<li>' + line + '</li>'
+    # lines[i] = '<p>' + line + '</p>'
     html = ''.join(lines)
     pics = re.findall(pic_pattern, html)
     for pic in pics:
         filename = re.findall(file_pattern, pic)[0]
-        p=QPixmap('image/'+filename)
-        w=p.width()
-        if w>400:
-            w=400
-        pic_new = unicode('<img src="file:///%s/image/'%os.getcwd() + filename + '" width=%d >'%w)
+        p = QPixmap('image/' + filename)
+        w = p.width()
+        if w > 400:
+            w = 400
+        pic_new = unicode('<img src="file:///%s/image/' % os.getcwd() + filename + '" width=%d >' % w)
         html = re.sub(pic_pattern, pic_new, html)  # 替换
     faces = re.findall(face_pattern, html)
     for face in faces:
         filename = re.findall(face_file_pattern, face)[0]
         '''@addgroup QwebView :本地图片需要使用绝对路径才能显示,或通过资源方式调用'''
-        pic_new = '<img src="file:///%s/image/'%os.getcwd() + filename + '">'
+        pic_new = '<img src="file:///%s/image/' % os.getcwd() + filename + '">'
         html = re.sub(face_pattern, pic_new, html)
     return html
 
@@ -195,6 +195,23 @@ def widgetQqmsg(parent, record):
     return ctl
 
 
+# 图像显示效果,叠加图像,变灰等等
+def iconEffect(icon, effect):
+    # todo
+    return icon
+
+
+# 查找图标文件
+def getIcon(param, effect=None):
+    img = (os.getcwd() + u'/头像/' + param + '.jpg')
+    if os.path.isfile(img):
+        icon = QIcon(img)
+        return iconEffect(icon, effect=effect)
+    icon = QIcon(':/icons/' + param + '.png')
+    if icon:
+        return iconEffect(icon, effect=effect)
+    return False
+
 class qtmodel(QtGui.QStandardItemModel):
     def __init__(self, tml, db, view):
         QtGui.QStandardItemModel.__init__(self)
@@ -203,7 +220,9 @@ class qtmodel(QtGui.QStandardItemModel):
         self.pages = 0
         self.page = 0
         self.tmpl = tml
-        self.filter = tml['filter']
+        self.filter = []  # 过滤器
+        if tml.has_key('filter'):
+            self.filter = tml['filter']
         self.db = db
         self.context = []
         view.setModel(self)
@@ -264,9 +283,11 @@ class qtmodel(QtGui.QStandardItemModel):
             self.context = self.db.read(self.tmpl['table'], kw)
         self.fill()
 
-    def fill_row(self, row, record):
+    # @param:row,行索引编号
+    def fill_row(self, row, fields, record, parent=None):
         col_index = 0
-        for col in self.tmpl['fields']:
+        itemFirst = None
+        for col in fields:
             if col.has_key('field') == False:
                 val = col['default']
             else:
@@ -276,22 +297,28 @@ class qtmodel(QtGui.QStandardItemModel):
                 func = col['getContext']
                 val = func(record)
             item = QtGui.QStandardItem()
-            if Qt.ItemIsUserCheckable in col['flag']:
-                item.setCheckable(True)
-                item.setTristate(False)
+            if col.has_key('flag'):
+                if Qt.ItemIsUserCheckable in col['flag']:
+                    item.setCheckable(True)
+                    item.setTristate(False)
+                    # 设置可编辑
+                    flag = item.flags()
+                    if Qt.ItemIsEditable not in col['flag']:
+                        flag &= ~ Qt.ItemIsEditable
+                        item.setFlags(flag)
 
-                def chkstate(b):
-                    if b == True:
-                        return 2
-                    return 0
+                    def chkstate(b):
+                        if b == True:
+                            return 2
+                        return 0
 
-                item.setCheckState(chkstate(val))
-            elif col.has_key('refence'):
+                    item.setCheckState(chkstate(val))
+            if col.has_key('refence'):
                 v = val
                 if v:
-                    v = v['name']
+                    v = v.mapped('name')
                 item = QtGui.QStandardItem(unicode(v))
-            elif col.has_key('one2many'):
+            if col.has_key('one2many'):
                 if val:
                     item.setText(unicode(val[col['one2many']]))
             elif col.has_key('many2one'):
@@ -300,14 +327,26 @@ class qtmodel(QtGui.QStandardItemModel):
             else:
                 if val:
                     item = QtGui.QStandardItem(unicode(val))
-            # 设置可编辑
-            flag = item.flags()
-            if Qt.ItemIsEditable not in col['flag']:
-                flag &= ~ Qt.ItemIsEditable
-                item.setFlags(flag)
-            self.setItem(row, col_index, item)
+            # 插入图标
+            if not itemFirst:  # 只在第一列插入
+                effect = None
+                if col.has_key('effect_field'):
+                    effect = record[col['effect_field']]
+                ico = getIcon('894413917', effect)  # todo :(record['ico'])      #图标名从ico字段读入
+                if ico:
+                    item.setIcon(ico)
+            ##
+            if parent:
+                if not itemFirst:
+                    parent.insertRow(row, item)
+                else:
+                    itemFirst.insertColumn(col_index, [item, ])
+            else:
+                self.setItem(row, col_index, item)
             id = record['id']
             item.setData(id, Qt.UserRole + 1)
+            if itemFirst == None:
+                itemFirst = item
             # id = item.data(Qt.UserRole + 1).toInt()
             # 设置嵌入控件
             if col.has_key('ctrl'):
@@ -344,6 +383,7 @@ class qtmodel(QtGui.QStandardItemModel):
                 else:
                     raise
             col_index = col_index + 1
+        return itemFirst
 
     def fill(self):
         self.editing = True
@@ -362,7 +402,7 @@ class qtmodel(QtGui.QStandardItemModel):
         row = 0
         if self.context:
             for q in self.context:
-                self.fill_row(row, q)
+                self.fill_row(row, self.tmpl['fields'], q)
                 row = row + 1
 
         # 插入空行
@@ -401,7 +441,7 @@ class qtmodel(QtGui.QStandardItemModel):
             val = unicode(item.toString())
         if id == 0:
             record = self.db.create(self.tmpl['table'], {field: val})
-            self.fill_row(row, record)
+            self.fill_row(row, self.tmpl['fields'], record)
         else:
             if self.tmpl['fields'][index.column()].has_key('refence'):
                 val = self.db.search(self.tmpl['fields'][index.column()]['refence'], [["name", "=", val]])[0]
@@ -469,18 +509,12 @@ class qtTreeModel(qtmodel):
     def __init__(self, tml, db, filter, view):
         qtmodel.__init__(self, tml, db, view)
 
-    def loadnode(self, parent, pid):
-        if pid:
-            p = self.db.search(self.tmpl['table'], [['parent_id', '=', pid]])
-        else:
-            p = self.db.search(self.tmpl['table'], filter)
-        context = self.db.read(self.tmpl['table'], p)
-        if not context:
-            return
+    def loadsubnode(self, parent, context):
+        tmpl = self.tmpl['children']
         for record in context:
             col_index = 0
             itemfirst = None
-            for col in self.tmpl['fields']:
+            for col in tmpl['fields']:
                 if col.has_key('field'):
                     txt = unicode(record[col['field']])
                 else:
@@ -500,10 +534,33 @@ class qtTreeModel(qtmodel):
                         self.setItem(itemfirst.index().row(), col_index, item)
                 item.setData(record['id'], Qt.UserRole + 1)
                 col_index = col_index + 1
-            self.loadnode(itemfirst, record['id'], [])
 
     def load(self):
-        self.loadnode(None, False)
+        self.editing = True
+        group = self.tmpl['parent']
+        table = group['table']
+        cats = self.db.search_browse(table, [])
+        row = 0
+        for u in cats:
+            item = self.fill_row(row, group['field'], u)
+            f = group['group_field']
+            row += 1
+
+            child = self.tmpl['children']
+            id = u.id
+            subs = self.db.search_browse(child['table'], [[f, '=', id]])
+            if not subs:
+                continue
+            subrow = 0
+            max = 25
+
+            for c in subs:
+                sub = self.tmpl['children']
+                self.fill_row(subrow, sub['fields'], c, item)
+                subrow += 1
+                if subrow >= 25:
+                    break
+        self.editing = False
 
 
 class qtComboboxmodel():
