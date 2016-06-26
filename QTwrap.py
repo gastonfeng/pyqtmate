@@ -212,6 +212,7 @@ def getIcon(param, effect=None):
         return iconEffect(icon, effect=effect)
     return False
 
+
 class qtmodel(QtGui.QStandardItemModel):
     def __init__(self, tml, db, view):
         QtGui.QStandardItemModel.__init__(self)
@@ -284,7 +285,8 @@ class qtmodel(QtGui.QStandardItemModel):
         self.fill()
 
     # @param:row,行索引编号
-    def fill_row(self, row, fields, record, parent=None):
+    # @param:level ,层次编号
+    def fill_row(self, row, fields, record, level=0, parent=None):
         col_index = 0
         itemFirst = None
         for col in fields:
@@ -345,6 +347,7 @@ class qtmodel(QtGui.QStandardItemModel):
                 self.setItem(row, col_index, item)
             id = record['id']
             item.setData(id, Qt.UserRole + 1)
+            item.setData(level, Qt.UserRole + 2)
             if itemFirst == None:
                 itemFirst = item
             # id = item.data(Qt.UserRole + 1).toInt()
@@ -468,7 +471,7 @@ class qtmodel(QtGui.QStandardItemModel):
 
     def selSet(self):
         '''返回选中的记录集'''
-        return self.table.browse(self.getSelectId())
+        return self.context(self.getSelectId())
 
     def setId(self, index, id):
         self.setData(index, id, Qt.UserRole + 1)
@@ -556,11 +559,32 @@ class qtTreeModel(qtmodel):
 
             for c in subs:
                 sub = self.tmpl['children']
-                self.fill_row(subrow, sub['fields'], c, item)
+                self.fill_row(subrow, sub['fields'], c, 1, item)
                 subrow += 1
                 if subrow >= 25:
                     break
         self.editing = False
+
+    def getLevel(self, index):
+        if len(index) > 0:
+            index = index[0]
+        id = self.data(index, Qt.UserRole + 2).toInt()[0]
+        return id
+
+    def selSet(self):
+        '''返回选中的记录集'''
+        indexs = self.getSelectindex()
+        level = self.getLevel(indexs)
+        id = self.getSelectId()
+        if level == 0:
+            group = self.tmpl['parent']
+            table = group['table']
+            cats = self.db.search_browse(table, id)
+            return level, cats
+        elif level == 1:
+            child = self.tmpl['children']
+            subs = self.db.search_browse(child['table'], [['id', 'in', id]])
+            return level, subs
 
 
 class qtComboboxmodel():
