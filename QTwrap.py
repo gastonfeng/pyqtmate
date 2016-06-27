@@ -7,7 +7,7 @@ from xml.dom import minidom
 import PyQt4
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import *
-from PyQt4.QtGui import QCursor, QPushButton, QLabel, QPixmap, QIcon
+from PyQt4.QtGui import QCursor, QPushButton, QLabel, QPixmap, QIcon, QImage, QColor, qRgb
 
 from pushbutton import qpushbutton
 from xml_misc import isxml, getXML
@@ -195,9 +195,41 @@ def widgetQqmsg(parent, record):
     return ctl
 
 
+def img_merage(img1, img2):
+    '''两个图片文件叠加,返回QPixmap'''
+    scale = 0.5
+    pm1 = QImage(img1)
+    if pm1.isNull():
+        raise
+    pm2 = QImage(img2)
+    if pm2.isNull():
+        raise
+    pm2 = pm2.scaled(pm1.width() * scale, pm1.height() * scale)
+    for x in range(0, pm2.width()):
+        for y in range(0, pm2.height()):
+            oldColor = pm2.pixel(x, y)
+            pm1.setPixel(x + pm1.width() - pm2.width(), y + pm1.height() - pm2.height(), oldColor)
+    return QPixmap(pm1)
+
+
+def greyScale(img):
+    '''从图片文件转换灰度图片,返回QPixmap'''
+    origin = QImage(img)
+    newImage = QImage(origin.width(), origin.height(), QImage.Format_ARGB32)
+    oldColor = QColor()
+    for x in range(0, origin.width()):
+        for y in range(0, origin.height()):
+            oldColor = QColor(origin.pixel(x, y))
+            average = (oldColor.red() + oldColor.green() + oldColor.blue()) / 3
+            newImage.setPixel(x, y, qRgb(average, average, average))
+    return QPixmap(newImage)
+
 # 图像显示效果,叠加图像,变灰等等
 def iconEffect(icon, effect):
-    # todo
+    if effect == 1:
+        return greyScale(icon)
+    elif effect == 0:
+        return img_merage(icon, ':/icon/images.png')
     return icon
 
 
@@ -205,11 +237,10 @@ def iconEffect(icon, effect):
 def getIcon(param, effect=None):
     img = (os.getcwd() + u'/头像/' + param + '.jpg')
     if os.path.isfile(img):
-        icon = QIcon(img)
-        return iconEffect(icon, effect=effect)
-    icon = QIcon(':/icons/' + param + '.png')
-    if icon:
-        return iconEffect(icon, effect=effect)
+        return iconEffect(img, effect=effect)
+    rf = QFile(':/icon/' + param + '.png')
+    if rf.exists():
+        return iconEffect(':/icon/' + param + '.png', effect=effect)
     return False
 
 
@@ -330,13 +361,20 @@ class qtmodel(QtGui.QStandardItemModel):
                 if val:
                     item = QtGui.QStandardItem(unicode(val))
             # 插入图标
-            if not itemFirst:  # 只在第一列插入
+            if not itemFirst and col.has_key('img_field'):  # 只在第一列插入
                 effect = None
                 if col.has_key('effect_field'):
                     effect = record[col['effect_field']]
-                ico = getIcon('894413917', effect)  # todo :(record['ico'])      #图标名从ico字段读入
-                if ico:
-                    item.setIcon(ico)
+                ico = record.ico
+                if not ico:
+                    ico = 'QQ'
+                else:
+                    if not isinstance(ico, str):
+                        raise
+                ico = getIcon(ico, effect)  # todo :()      #图标名从ico字段读入
+                icon = QIcon()
+                icon.addPixmap(ico)
+                item.setIcon(icon)
             ##
             if parent:
                 if not itemFirst:

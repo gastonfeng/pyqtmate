@@ -74,4 +74,4 @@ class guiqt(QtGui.QMainWindow, guiUtil):
 class guiDialog(QtGui.QDialog, guiUtil):
     def __init__(self, *args):
         QtGui.QDialog.__init__(self, *args)
-        self.setupUi(self)
+        # self.setupUi(self)
