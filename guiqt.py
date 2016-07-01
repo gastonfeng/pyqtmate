@@ -74,11 +74,8 @@ class guiqt(QtGui.QMainWindow, guiUtil):
 class guiDialog(QtGui.QDialog, guiUtil):
     def __init__(self, *args):
         QtGui.QDialog.__init__(self, *args)
-<<<<<<< HEAD
-        # self.setupUi(self)
-=======
+
         self.setupUi(self)
         # self.setWindowModality(Qt.WindowModal)
         self.setModal(True)
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
->>>>>>> 693fe601a70a394e9c4aea2f340bdcea5d24d3d6

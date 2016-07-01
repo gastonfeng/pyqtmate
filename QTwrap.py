@@ -367,7 +367,6 @@ class qtmodel(QtGui.QStandardItemModel):
                 effect = None
                 if col.has_key('effect_field'):
                     effect = record[col['effect_field']]
-<<<<<<< HEAD
                 ico = record.ico
                 if not ico:
                     ico = 'QQ'
@@ -378,11 +377,7 @@ class qtmodel(QtGui.QStandardItemModel):
                 icon = QIcon()
                 icon.addPixmap(ico)
                 item.setIcon(icon)
-=======
-                ico = getIcon(record['ico'], effect)  # 图标名从ico字段读入
-                if ico:
-                    item.setIcon(ico)
->>>>>>> 693fe601a70a394e9c4aea2f340bdcea5d24d3d6
+
             ##
             if parent:
                 if not itemFirst:
