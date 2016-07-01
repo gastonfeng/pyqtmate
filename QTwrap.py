@@ -229,7 +229,7 @@ def iconEffect(icon, effect):
     if effect == 1:
         return greyScale(icon)
     elif effect == 0:
-        return img_merage(icon, ':/icon/images.png')
+        return img_merage(icon, ':/icon/woniu')
     return icon
 
 
@@ -240,10 +240,8 @@ def getIcon(param, effect=None):
     img = (os.getcwd() + u'/头像/' + param + '.jpg')
     if os.path.isfile(img):
         return iconEffect(img, effect=effect)
-    rf = QFile(':/icon/' + param + '.png')
-    if rf.exists():
-        return iconEffect(':/icon/' + param + '.png', effect=effect)
-    return False
+    return iconEffect(':/icon/' + param, effect=effect)
+
 
 
 class qtmodel(QtGui.QStandardItemModel):
