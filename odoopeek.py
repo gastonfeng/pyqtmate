@@ -3,6 +3,7 @@
 import time
 
 import odoorpc as odoorpc
+from PyQt4.QtGui import QMessageBox
 
 
 class odoopeek(object):
@@ -15,55 +16,61 @@ class odoopeek(object):
     def setSingal(self, s):
         self.singal = s
 
-    def login(self, url, port, db, username, password):
+    def login(self, url, port, db, username, password, errdialog=None):
         try:
             self.odoo = odoorpc.ODOO(url, 'jsonrpc', port)
             self.odoo.login(db, username, password)
         except Exception, e:
-            print e.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库登陆错误', e.message)
             return False
         return True
 
-    def recordCount(self, table, filter=[]):
+    def recordCount(self, table, filter=[], errdialog=None):
         try:
             module = self.odoo.env[table]
             kw = module.search_count(filter)
         except  Exception, e:
-            print e.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
             kw = False
         return kw
 
-    def read(self, table, ids):
+    def read(self, table, ids, errdialog=None):
         try:
             module = self.odoo.env[table]
             kw = module.read(ids)
         except Exception, e:
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库读操作错误', e.message)
             kw = False
         # self.mutex.release()
         return kw
 
-    def write(self, table, ids, values):
+    def write(self, table, ids, values, errdialog=None):
         try:
             module = self.odoo.env[table]
             kw = module.write(ids, values)
             if self.singal:
                 self.singal.emit({'db': table}, False)
         except Exception, e:
-            print e.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库写错误', e.message)
             kw = False
         # self.mutex.release()
         return kw
 
-    def search(self, table, filter, limit=25, offset=0, order=''):
+    def search(self, table, filter, limit=25, offset=0, order='', errdialog=None):
         try:
             module = self.odoo.env[table]
             ids = self.odoo.execute_kw(table, 'search', [filter], {'limit': limit, 'offset': offset, 'order': order})
         except Exception, e:
-            print e.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库搜索错误', e.message)
             ids = False
         return ids
 
-    def search_write(self, table, filter, values):
+    def search_write(self, table, filter, values, errdialog=None):
         try:
             module = self.odoo.env[table]
             ids = module.search(filter)
@@ -71,41 +78,45 @@ class odoopeek(object):
             if self.singal:
                 self.singal.emit({'db': table}, False)
         except Exception, e:
-            print e
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
             kw = False
         # self.mutex.release()
         return kw
 
-    def search_read(self, table, filter, limit=25, offset=0, order=''):
+    def search_read(self, table, filter, limit=25, offset=0, order='', errdialog=None):
         try:
             module = self.odoo.env[table]
             ids = self.odoo.execute_kw(table, 'search', [filter], {'limit': limit, 'offset': offset, 'order': order})
             return module.read(ids)
         except Exception, e:
-            print e.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
             kw = False
         return kw
 
-    def browse(self, table, ids):
+    def browse(self, table, ids, errdialog=None):
         try:
             if table in self.odoo.env:
                 module = self.odoo.env[table]
                 return module.browse(ids)
         except Exception, ex:
-            print ex.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库操作错误', ex.message)
         return False
 
-    def search_browse(self, table, filter, limit=25, offset=0, order=''):
+    def search_browse(self, table, filter, limit=25, offset=0, order='', errdialog=None):
         try:
             if table in self.odoo.env:
                 module = self.odoo.env[table]
                 ids = module.search(filter, limit=limit, offset=offset, order=order)
                 return module.browse(ids)
         except Exception, e:
-            print e.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
         return False
 
-    def create(self, table, vals):
+    def create(self, table, vals, errdialog=None):
         try:
             module = self.odoo.env[table]
             ids = module.create(vals)
@@ -113,22 +124,24 @@ class odoopeek(object):
             if self.singal:
                 self.singal.emit({'db': table}, False)
         except Exception, e:
-            print e.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
             ret = False
         return ret
 
-    def unlink(self, table, ids):
+    def unlink(self, table, ids, errdialog=None):
         try:
             module = self.odoo.env[table]
             kw = module.unlink(ids)
             if self.singal:
                 self.singal.emit({'db': table}, False)
         except Exception, e:
-            print e.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
             kw = False
         return kw
 
-    def search_unlink(self, table, filter):
+    def search_unlink(self, table, filter, errdialog=None):
         try:
             module = self.odoo.env[table]
             ids = module.search(filter)
@@ -136,7 +149,8 @@ class odoopeek(object):
             if self.singal:
                 self.singal.emit({'db': table}, False)
         except Exception, e:
-            print e.message
+            if errdialog:
+                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
             kw = False
         return kw
 
