@@ -5,7 +5,7 @@ from PyQt4 import QtGui, uic
 from PyQt4.QtCore import QFile
 from PyQt4.QtGui import QAbstractItemView
 
-from QTwrap import qtmodel, qtMenu, qtTreeModel
+from QTwrap import qtmodel, qtMenu, qtTreeModel, Qt
 
 """编译UI文件"""
 
@@ -75,3 +75,6 @@ class guiDialog(QtGui.QDialog, guiUtil):
     def __init__(self, *args):
         QtGui.QDialog.__init__(self, *args)
         self.setupUi(self)
+        # self.setWindowModality(Qt.WindowModal)
+        self.setModal(True)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)

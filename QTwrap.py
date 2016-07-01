@@ -203,6 +203,8 @@ def iconEffect(icon, effect):
 
 # 查找图标文件
 def getIcon(param, effect=None):
+    if not param:
+        param = 'QQ'
     img = (os.getcwd() + u'/头像/' + param + '.jpg')
     if os.path.isfile(img):
         icon = QIcon(img)
@@ -328,11 +330,11 @@ class qtmodel(QtGui.QStandardItemModel):
                 if val:
                     item = QtGui.QStandardItem(unicode(val))
             # 插入图标
-            if not itemFirst:  # 只在第一列插入
+            if not itemFirst and col.has_key('img_field'):  # 只在第一列插入
                 effect = None
                 if col.has_key('effect_field'):
                     effect = record[col['effect_field']]
-                ico = getIcon('894413917', effect)  # todo :(record['ico'])      #图标名从ico字段读入
+                ico = getIcon(record['ico'], effect)  # 图标名从ico字段读入
                 if ico:
                     item.setIcon(ico)
             ##
@@ -490,6 +492,11 @@ class qtmodel(QtGui.QStandardItemModel):
             self.db.unlink(self.tmpl['table'], ids)
         # for i in index:
         #            self.removeRow(i.row())
+        self.submit()
+        self.load()
+
+    def removeSelect(self):
+        self.db.unlink(self.tmpl['table'], self.getSelectId())
         self.submit()
         self.load()
 
