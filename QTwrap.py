@@ -510,7 +510,8 @@ class qtmodel(QtGui.QStandardItemModel):
 
     def selSet(self):
         '''返回选中的记录集'''
-        return self.context(self.getSelectId())
+        ids = self.getSelectId()
+        return self.context[ids]
 
     def setId(self, index, id):
         self.setData(index, id, Qt.UserRole + 1)
