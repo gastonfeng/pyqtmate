@@ -22,7 +22,7 @@ class odoopeek(object):
             self.odoo.login(db, username, password)
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库登陆错误', e.message)
+                QMessageBox.information(errdialog, u'数据库登陆错误', str(e))
             return False
         return True
 
@@ -32,7 +32,7 @@ class odoopeek(object):
             kw = module.search_count(filter)
         except  Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
+                QMessageBox.information(errdialog, u'数据库操作错误', str(e))
             kw = False
         return kw
 
@@ -42,7 +42,7 @@ class odoopeek(object):
             kw = module.read(ids)
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库读操作错误', e.message)
+                QMessageBox.information(errdialog, u'数据库读操作错误', str(e))
             kw = False
         # self.mutex.release()
         return kw
@@ -55,7 +55,7 @@ class odoopeek(object):
                 self.singal.emit({'db': table}, False)
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库写错误', e.message)
+                QMessageBox.information(errdialog, u'数据库写错误', str(e))
             kw = False
         # self.mutex.release()
         return kw
@@ -66,7 +66,7 @@ class odoopeek(object):
             ids = self.odoo.execute_kw(table, 'search', [filter], {'limit': limit, 'offset': offset, 'order': order})
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库搜索错误', e.message)
+                QMessageBox.information(errdialog, u'数据库搜索错误', str(e))
             ids = False
         return ids
 
@@ -79,7 +79,7 @@ class odoopeek(object):
                 self.singal.emit({'db': table}, False)
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
+                QMessageBox.information(errdialog, u'数据库操作错误', str(e))
             kw = False
         # self.mutex.release()
         return kw
@@ -91,7 +91,7 @@ class odoopeek(object):
             return module.read(ids)
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
+                QMessageBox.information(errdialog, u'数据库操作错误', str(e))
             kw = False
         return kw
 
@@ -113,7 +113,7 @@ class odoopeek(object):
                 return module.browse(ids)
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
+                QMessageBox.information(errdialog, u'数据库操作错误', str(e))
         return False
 
     def create(self, table, vals, errdialog=None):
@@ -125,7 +125,7 @@ class odoopeek(object):
                 self.singal.emit({'db': table}, False)
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
+                QMessageBox.information(errdialog, u'数据库操作错误', str(e))
             ret = False
         return ret
 
@@ -137,7 +137,7 @@ class odoopeek(object):
                 self.singal.emit({'db': table}, False)
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
+                QMessageBox.information(errdialog, u'数据库操作错误', str(e))
             kw = False
         return kw
 
@@ -150,7 +150,7 @@ class odoopeek(object):
                 self.singal.emit({'db': table}, False)
         except Exception, e:
             if errdialog:
-                QMessageBox.information(errdialog, u'数据库操作错误', e.message)
+                QMessageBox.information(errdialog, u'数据库操作错误', str(e))
             kw = False
         return kw
 

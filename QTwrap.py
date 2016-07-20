@@ -375,6 +375,15 @@ class qtmodel(QtGui.QStandardItemModel):
                 icon = QIcon()
                 icon.addPixmap(ico)
                 item.setIcon(icon)
+            # 插入ToolTip提示信息
+            if col.has_key('toolTip'):
+                prefix = ''
+                if col.has_key('toolTip_prefix'):
+                    prefix = col['toolTip_prefix']
+                tip = col['toolTip']
+                tip = record[tip]
+                tip = unicode(tip)
+                item.setToolTip(prefix + tip)
 
             ##
             if parent:
@@ -511,7 +520,9 @@ class qtmodel(QtGui.QStandardItemModel):
     def selSet(self):
         '''返回选中的记录集'''
         ids = self.getSelectId()
-        return self.context[ids]
+        records = self.context
+        records.filtered(lambda r: r.id in ids)
+        return records
 
     def setId(self, index, id):
         self.setData(index, id, Qt.UserRole + 1)
