@@ -520,8 +520,7 @@ class qtmodel(QtGui.QStandardItemModel):
     def selSet(self):
         '''返回选中的记录集'''
         ids = self.getSelectId()
-        records = self.context
-        records.filtered(lambda r: r.id in ids)
+        records = self.table.browse(ids)
         return records
 
     def setId(self, index, id):
